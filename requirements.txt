@@ -1,5 +1,5 @@
 pandas==2.2.2
-streamlit==1.32.0
+streamlit==1.38.0
 openpyxl==3.1.2
 traitlets==5.10.0
 python-docx==0.8.11
@@ -7,4 +7,4 @@ PyPDF2==3.0.1
 pdf2docx==0.5.8
 docx2pdf==0.1.8
 sympy==1.13.2
-pywin32
+pywin32==228
