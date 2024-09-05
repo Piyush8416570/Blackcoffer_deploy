@@ -1,12 +1,4 @@
-# import io
-# import os
-# import pandas as pd
-# from zipfile import ZipFile
-# from PyPDF2 import PdfReader
-# from docx import Document
-# from docx.shared import Pt
-# import streamlit as st
-# from datetime import date
+
 
 from ast import Not
 import io
@@ -21,7 +13,7 @@ import streamlit as st
 from datetime import date
 from PyPDF2 import PdfReader
 from pdf2docx import Converter
-from docx2pdf import convert
+# from docx2pdf import convert
 # import pythoncom
 from sympy import true
 
@@ -34,12 +26,22 @@ def convert_pdf_to_docx(pdf_path):
     cv.close()
     return docx_path
 
+import subprocess
+
 def convert_docx_to_pdf(docx_path):
-    # pythoncom.CoInitialize()  # Initialize COM library
     pdf_path = docx_path.replace('.docx', '.pdf')
-    convert(docx_path, pdf_path)
-    # pythoncom.CoUninitialize()  # Uninitialize COM library after use
-    return pdf_path
+    try:
+        subprocess.run(['unoconv', '-f', 'pdf', '-o', pdf_path, docx_path], check=True)
+        return pdf_path
+    except subprocess.CalledProcessError as e:
+        print(f"Error converting file: {e}")
+        return None
+# def convert_docx_to_pdf(docx_path):
+#     # pythoncom.CoInitialize()  # Initialize COM library
+#     pdf_path = docx_path.replace('.docx', '.pdf')
+#     convert(docx_path, pdf_path)
+#     # pythoncom.CoUninitialize()  # Uninitialize COM library after use
+#     return pdf_path
 
 
 def generate_lois(df, template_file, company_name, your_name):
@@ -179,224 +181,3 @@ def generate_zip(file_paths):
 
     return zip_buffer.getvalue()
 
-
-# ----------------------------------------------------------------------
-# def generate_docs(df, template_file):
-    def process_template(template_path, output_path, data):
-        if isinstance(template_path, str):
-            if template_path.lower().endswith('.pdf'):
-                process_pdf_template(template_path, output_path, data)
-            elif template_path.lower().endswith('.docx'):
-                process_docx_template(template_path, output_path, data)
-            else:
-                raise ValueError(f"Unsupported file format for {template_path}. Please use PDF or DOCX.")
-        else:
-            if template_path.name.lower().endswith('.pdf'):
-                process_pdf_template(template_path, output_path, data)
-            elif template_path.name.lower().endswith('.docx'):
-                process_docx_template(template_path, output_path, data)
-            else:
-                raise ValueError(f"Unsupported file format for {template_path.name}. Please use PDF or DOCX.")
-
-    def process_pdf_template(template_path, output_path, data):
-        try:
-            # Convert PDF to DOCX as a workaround (simplified conversion)
-            template_pdf = PdfReader(template_path)
-            doc = Document()
-            
-            for page in template_pdf.pages:
-                text = page.extract_text()
-                doc.add_paragraph(text)
-            
-            process_docx_template(doc, output_path, data)
-        except Exception as e:
-            st.error(f"Error processing PDF template for {output_path}: {str(e)}")
-            raise
-
-    def process_docx_template(template, output_path, data):
-        try:
-            if isinstance(template, str):
-                doc = Document(template)
-            else:
-                doc = template
-
-            for paragraph in doc.paragraphs:
-                for key, value in data.items():
-                    if f"{{{{{key}}}}}" in paragraph.text:
-                        paragraph.text = paragraph.text.replace(f"{{{{{key}}}}}", str(value))
-                        for run in paragraph.runs:
-                            run.font.size = Pt(11)
-
-            doc.save(output_path)
-        except Exception as e:
-            st.error(f"Error processing DOCX template for {output_path}: {str(e)}")
-            raise
-    
-    generated_files = []
-    for index, row in df.iterrows():
-        data = row.to_dict()
-        # Add today's date to the data dictionary
-        data['Today Date'] = date.today().strftime("%d %m, %Y")
-
-        output_path = f"LOI_{index}.docx"
-        try:
-            process_template(template_file, output_path, data)
-            generated_files.append(output_path)
-        except Exception as e:
-            st.error(f"Failed to generate LOI for row {index}: {str(e)}")
-
-    return generated_files
-
-# def handle_generate_lois(df):
-    st.write("Generating LOIs...")
-    
-    uploaded_template = st.file_uploader("Upload LOI template (PDF or DOCX)", type=["pdf", "docx"])
-    
-    if uploaded_template is None:
-        template_file = "Generic_LOI.pdf"  # Path to your default template
-        st.write("Using default template: Generic LOI.pdf")
-    else:
-        template_file = uploaded_template
-        st.write(f"Using uploaded template: {template_file.name}")
-    
-    generated_files = generate_docs(df, template_file)
-    
-    st.write(f"Generated {len(generated_files)} LOIs.")
-    
-    # Create a zip file
-    zip_buffer = io.BytesIO()
-    with ZipFile(zip_buffer, "w") as zip_file:
-        for file in generated_files:
-            zip_file.write(file)
-    
-    # Provide a download button for the zip file
-    st.download_button(
-        label="Download All LOIs",
-        data=zip_buffer.getvalue(),
-        file_name="LOIs.zip",
-        mime="application/zip"
-    )
-# ------------------------------------------------------------
-# import io
-# import os
-# import pandas as pd
-# # from reportlab.pdfgen import canvas
-# # from reportlab.lib.pagesizes import letter
-# from PyPDF2 import PdfReader, PdfWriter
-# from reportlab.lib.pagesizes import letter
-# from reportlab.platypus import SimpleDocTemplate, Paragraph
-# from reportlab.lib.styles import getSampleStyleSheet
-# from docx import Document
-# from docx.shared import Pt
-# import streamlit as st
-# from datetime import date
-# import fitz 
-
-# def generate_lois(df, template_file):
-#     def process_template(template_path, output_path, data):
-#         if isinstance(template_path, str):
-#             if template_path.lower().endswith('.pdf'):
-#                 process_pdf_template(template_path, output_path, data)
-#             elif template_path.lower().endswith('.docx'):
-#                 process_docx_template(template_path, output_path, data)
-#             else:
-#                 raise ValueError(f"Unsupported file format for {template_path}. Please use PDF or DOCX.")
-#         else:
-#             if template_path.name.lower().endswith('.pdf'):
-#                 process_pdf_template(template_path, output_path, data)
-#             elif template_path.name.lower().endswith('.docx'):
-#                 process_docx_template(template_path, output_path, data)
-#             else:
-#                 raise ValueError(f"Unsupported file format for {template_path.name}. Please use PDF or DOCX.")
-
-#     def process_pdf_template(template_path, output_path, data):
-#         try:
-#             template_pdf = PdfReader(template_path)
-#             output_pdf = PdfWriter()
-
-#             styles = getSampleStyleSheet()
-
-#             for page_number in range(len(template_pdf.pages)):
-#                 page = template_pdf.pages[page_number]
-#                 packet = io.BytesIO()
-#                 doc = SimpleDocTemplate(packet, pagesize=letter)
-#                 elements = []
-
-#                 for key, value in data.items():
-#                     if f"{{{{{key}}}}}" in page.extract_text():
-#                         elements.append(Paragraph(f"{key}: {value}", styles["BodyText"]))
-
-#                 if elements:
-#                     doc.build(elements)
-#                     packet.seek(0)
-#                     new_pdf = PdfReader(packet)
-#                     page.merge_page(new_pdf.pages[0])
-
-#                 output_pdf.add_page(page)
-
-#             with open(output_path, "wb") as output_file:
-#                 output_pdf.write(output_file)
-#         except Exception as e:
-#             st.error(f"Error processing PDF template for {output_path}: {str(e)}")
-#             raise
-
-#     def process_docx_template(template_path, output_path, data):
-#         try:
-#             doc = Document(template_path)
-            
-#             for paragraph in doc.paragraphs:
-#                 for key, value in data.items():
-#                     if f"{{{{{key}}}}}" in paragraph.text:
-#                         paragraph.text = paragraph.text.replace(f"{{{{{key}}}}}", str(value))
-#                         for run in paragraph.runs:
-#                             run.font.size = Pt(11)
-            
-#             doc.save(output_path)
-#         except Exception as e:
-#             st.error(f"Error processing DOCX template for {output_path}: {str(e)}")
-#             raise
-    
-#     generated_files = []
-#     for index, row in df.iterrows():
-#         data = row.to_dict()
-#         print(f'PDF is here:',(data))
-#         # Add today's date to the data dictionary
-#         data['Today Date'] = date.today().strftime("%d %m, %Y")
-
-#         if isinstance(template_file, str):
-#             template_extension = os.path.splitext(template_file)[1].lower()
-#         else:
-#             template_extension = os.path.splitext(template_file.name)[1].lower()
-        
-#         output_path = f"LOI_{index}{template_extension}"
-#         try:
-#             process_template(template_file, output_path, data)
-#             generated_files.append(output_path)
-#         except Exception as e:
-#             st.error(f"Failed to generate LOI for row {index}: {str(e)}")
-
-#     return generated_files
-
-# def handle_generate_lois(df):
-#     st.write("Generating LOIs...")
-    
-#     uploaded_template = st.file_uploader("Upload LOI template (PDF or DOCX)", type=["pdf", "docx"])
-    
-#     if uploaded_template is None:
-#         template_file = "Generic_LOI.pdf"  # Path to your default template
-#         st.write("Using default template: Generic LOI.pdf")
-#     else:
-#         template_file = uploaded_template
-#         st.write(f"Using uploaded template: {template_file.name}")
-    
-#     generated_files = generate_lois(df, template_file)
-    
-#     st.write(f"Generated {len(generated_files)} LOIs.")
-#     for file in generated_files:
-#         with open(file, "rb") as f:
-#             st.download_button(
-#                 label=f"Download {file}",
-#                 data=f,
-#                 file_name=file,
-#                 mime="application/pdf" if file.endswith('.pdf') else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-#             )
