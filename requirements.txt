@@ -3,7 +3,7 @@ streamlit==1.32.0
 openpyxl==3.1.2
 traitlets==5.10.0
 python-docx==0.8.11
-PyPDF2==3.1.0
+PyPDF2==3.0.1
 pdf2docx==0.5.6
 docx2pdf==0.1.8
 pypiwin32==305
