@@ -6,5 +6,5 @@ python-docx==0.8.11
 PyPDF2==3.0.1
 pdf2docx==0.5.8
 docx2pdf==0.1.8
-pypiwin32==305.1
+pywin32==305.1
 sympy==1.13.2
