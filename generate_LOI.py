@@ -22,7 +22,7 @@ from datetime import date
 from PyPDF2 import PdfReader
 from pdf2docx import Converter
 from docx2pdf import convert
-import pythoncom
+# import pythoncom
 from sympy import true
 
 # from streamlit.runtime.legacy_caching import cache_clear
@@ -35,10 +35,10 @@ def convert_pdf_to_docx(pdf_path):
     return docx_path
 
 def convert_docx_to_pdf(docx_path):
-    pythoncom.CoInitialize()  # Initialize COM library
+    # pythoncom.CoInitialize()  # Initialize COM library
     pdf_path = docx_path.replace('.docx', '.pdf')
     convert(docx_path, pdf_path)
-    pythoncom.CoUninitialize()  # Uninitialize COM library after use
+    # pythoncom.CoUninitialize()  # Uninitialize COM library after use
     return pdf_path
 
 
