@@ -16,6 +16,7 @@ from pdf2docx import Converter
 # from docx2pdf import convert
 # import pythoncom
 from sympy import true
+import fitz  # PyMuPDF
 
 # from streamlit.runtime.legacy_caching import cache_clear
 # from streamlit.runtime.caching import cache_data
@@ -30,14 +31,35 @@ import subprocess
 
 def convert_docx_to_pdf(docx_path):
     pdf_path = docx_path.replace('.docx', '.pdf')
-    try:
-        result = subprocess.run(['unoconv', '-f', 'pdf', '-o', pdf_path, docx_path], capture_output=True, text=True, check=True)
-        return pdf_path
-    except subprocess.CalledProcessError as e:
-        st.error(f"Error converting file: {e}")
-        st.error(f"STDOUT: {e.stdout}")
-        st.error(f"STDERR: {e.stderr}")
-        return None
+    
+    # Create a new PDF document
+    doc = fitz.open()
+    page = doc.new_page()
+    
+    # Open the docx file
+    docx = Document(docx_path)
+    
+    # Write the text to the PDF
+    text = "\n".join([para.text for para in docx.paragraphs])
+    page.insert_text((50, 50), text)  # Insert at position (50, 50)
+    
+    # Save the PDF
+    doc.save(pdf_path)
+    doc.close()
+    
+    return pdf_path
+
+# def convert_docx_to_pdf(docx_path):
+#     pdf_path = docx_path.replace('.docx', '.pdf')
+#     try:
+#         result = subprocess.run(['unoconv', '-f', 'pdf', '-o', pdf_path, docx_path], capture_output=True, text=True, check=True)
+#         return pdf_path
+#     except subprocess.CalledProcessError as e:
+#         st.error(f"Error converting file: {e}")
+#         st.error(f"STDOUT: {e.stdout}")
+#         st.error(f"STDERR: {e.stderr}")
+#         return None
+# --------------------------------------
 # def convert_docx_to_pdf(docx_path):
 #     # pythoncom.CoInitialize()  # Initialize COM library
 #     pdf_path = docx_path.replace('.docx', '.pdf')
@@ -76,7 +98,6 @@ def generate_lois(df, template_file, company_name, your_name):
             
             # Add today's date to the data dictionary
             data['Today Date'] = date.today().strftime("%d, %B, %Y")
-    
     
             # Use the input values for all LOIs
             data['Company'] = company_name
