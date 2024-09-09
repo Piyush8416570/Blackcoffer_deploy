@@ -31,10 +31,12 @@ import subprocess
 def convert_docx_to_pdf(docx_path):
     pdf_path = docx_path.replace('.docx', '.pdf')
     try:
-        subprocess.run(['unoconv', '-f', 'pdf', '-o', pdf_path, docx_path], check=True)
+        result = subprocess.run(['unoconv', '-f', 'pdf', '-o', pdf_path, docx_path], capture_output=True, text=True, check=True)
         return pdf_path
     except subprocess.CalledProcessError as e:
-        print(f"Error converting file: {e}")
+        st.error(f"Error converting file: {e}")
+        st.error(f"STDOUT: {e.stdout}")
+        st.error(f"STDERR: {e.stderr}")
         return None
 # def convert_docx_to_pdf(docx_path):
 #     # pythoncom.CoInitialize()  # Initialize COM library
