@@ -69,36 +69,45 @@ def generate_lois(df, template_file, company_name, your_name):
    
     generated_files = []
     for index, row in df.iterrows():
-        data = row.to_dict()
-        
-        # Add today's date to the data dictionary
-        data['Today Date'] = date.today().strftime("%d, %B, %Y")
+        try:
+            data = row.to_dict()
+            
+            # Add today's date to the data dictionary
+            data['Today Date'] = date.today().strftime("%d, %B, %Y")
+    
+    
+            # Use the input values for all LOIs
+            data['Company'] = company_name
+            data['Your Name'] = your_name
+    
+            print(f'PDF is here:', (data))
+            # Create a new document for each row
+            doc = Document(template_path)
+    
+            # Replace placeholders
+            for paragraph in doc.paragraphs:
+                for key, value in data.items():
+                    if f"{{{{{key}}}}}" in paragraph.text:
+                        paragraph.text = paragraph.text.replace(f"{{{{{key}}}}}", str(value))
+    
+            # Save the document
+            output_path = f"LOI_{index}.docx"
+            doc.save(output_path)
+            # now we are going to reconvert the docx to pdf 
+            pdf_path = convert_docx_to_pdf(output_path)
+    
+            if os.path.exists(pdf_path):
+                generated_files.append(pdf_path)
+                st.success(f"Generated LOI for index {index}")
+            else:
+                st.warning(f"Failed to generate PDF for index {index}")
+    
+                # Optional: remove the intermediate DOCX file
+            if os.path.exists(output_path):
+                os.remove(output_path)
 
-
-        # Use the input values for all LOIs
-        data['Company'] = company_name
-        data['Your Name'] = your_name
-
-        print(f'PDF is here:', (data))
-        # Create a new document for each row
-        doc = Document(template_path)
-
-        # Replace placeholders
-        for paragraph in doc.paragraphs:
-            for key, value in data.items():
-                if f"{{{{{key}}}}}" in paragraph.text:
-                    paragraph.text = paragraph.text.replace(f"{{{{{key}}}}}", str(value))
-
-        # Save the document
-        output_path = f"LOI_{index}.docx"
-        doc.save(output_path)
-        # now we are going to reconvert the docx to pdf 
-        pdf_path = convert_docx_to_pdf(output_path)
-
-        generated_files.append(pdf_path)
-
-        # Optional: remove the intermediate DOCX file
-        os.remove(output_path)
+        except Exception as e:
+            st.error(f"Error generating LOI for index {index}: {str(e)}")
 
     return generated_files
 
@@ -177,7 +186,8 @@ def generate_zip(file_paths):
     zip_buffer = io.BytesIO()
     with ZipFile(zip_buffer, "w") as zip_file:
         for file_path in file_paths:
-            zip_file.write(file_path, os.path.basename(file_path))
+            if file_path and os.path.exists(file_path):
+                zip_file.write(file_path, os.path.basename(file_path))
 
     return zip_buffer.getvalue()
 
