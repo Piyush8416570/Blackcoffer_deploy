@@ -172,9 +172,13 @@ def main():
         # Check if the file is a CSV or an Excel file
         if uploaded_file.name.endswith('.csv'):
             df = pd.read_csv(uploaded_file)
+            # Convert 'Apn' column to string and handle NaN values
+            df['Apn'] = df['Apn'].fillna('').astype(str)
             st.write("CSV file uploaded successfully!")
         elif uploaded_file.name.endswith('.xlsx'):
             df = pd.read_excel(uploaded_file)
+            # Convert 'Apn' column to string and handle NaN values
+            df['Apn'] = df['Apn'].fillna('').astype(str)
             st.write("Excel file uploaded successfully!")
         else:
             st.error("Unsupported file format. Please upload a CSV or Excel file.")
@@ -185,8 +189,8 @@ def main():
 
         # Calculate Percent Equity here
         df['Total Loan Balance'] = df['Total Loan Balance'].replace(r'[\$,]', '', regex=True).astype(float)
-        df['Last Sale Price'] = df['Last Sale Price'].replace(r'[\$,]', '', regex=True).astype(float)
-        df['Percent Equity'] = (df['Last Sale Price'] - df['Total Loan Balance']) / df['Last Sale Price'] * 100
+        df['Mls Listing Amount'] = df['Mls Listing Amount'].replace(r'[\$,]', '', regex=True).astype(float)
+        df['Percent Equity'] = (df['Mls Listing Amount'] - df['Total Loan Balance']) / df['Mls Listing Amount'] * 100
         df['Percent Equity'] = df['Percent Equity'].round(2)
       
 
@@ -255,5 +259,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
